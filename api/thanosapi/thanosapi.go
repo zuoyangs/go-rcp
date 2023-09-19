@@ -45,7 +45,7 @@ func ConstructQuery(clusterCategory, clusterName, clusterJob, clusterMode, clust
 		)
 
 	encodedQuery := url.QueryEscape(query)
-	url := fmt.Sprintf("https://thanos.wehotelio.com/api/v1/query?query=%s", encodedQuery)
+	url := fmt.Sprintf("https://thanos.bac.com/api/v1/query?query=%s", encodedQuery)
 
 	resp, err := http.Get(url)
 	if err != nil {
