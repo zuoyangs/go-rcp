@@ -1,29 +1,28 @@
 package main
 
 import (
-	"fmt"
 
-	"github.com/xuri/excelize/v2"
+	"fmt"
+	"github.com/spf13/viper"
+
+	"github.com/zuoyangs/go-rcp/app/output"
+	"github.com/zuoyangs/go-rcp/app/thanosapi"
+	"github.com/zuoyangs/go-rcp/utils"
 )
 
 func main() {
-	f, err := excelize.OpenFile("etc/cce容器集群信息.xlsx")
-	if err != nil {
-		fmt.Println(err)
-		return
+
+	viper.SetConfigType("ini")
+	viper.SetConfigFile("etc/config/prometheus_server.ini")
+
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Printf("Error reading config file, %s", err)
 	}
 
-	rows, err := f.GetRows("集群信息")
-	if err != nil {
-		fmt.Println(err)
-		return
+	for _, name := range viper.AllKeys() {
+		fmt.Println(name)
 	}
 
-	for _, row := range rows {
-		for _, cell := range row {
-			fmt.Print(cell, "\t")
-		}
-		fmt.Println()
-	}
-
+	output.Exec_output()
+	thanosapi.GetClusterDetails("hwc-sh1-dev-cluster")
 }
