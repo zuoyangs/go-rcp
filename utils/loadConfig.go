@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 
+	"github.com/spf13/viper"
 	"gopkg.in/ini.v1"
 )
 
@@ -25,4 +26,18 @@ func LoadConfigValues(loadFilePath, sectionName string, keyNames []string) (map[
 	}
 
 	return configValues, nil
+}
+
+func GetSectionsAndLabels(env string) (map[string]string, error) {
+	v := viper.New()
+	v.SetConfigType("ini")
+	v.SetConfigName("prometheus_server")
+	v.AddConfigPath("/etc/config")
+
+	if err := v.ReadInConfig(); err != nil {
+		return nil, err
+	}
+
+	labels := v.GetStringMapString(env)
+	return labels, nil
 }
