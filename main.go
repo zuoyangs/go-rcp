@@ -1,28 +1,31 @@
 package main
 
 import (
-
 	"fmt"
-	"github.com/spf13/viper"
-
-	"github.com/zuoyangs/go-rcp/app/output"
+	"github.com/zuoyangs/go-rcp/app/execl"
 	"github.com/zuoyangs/go-rcp/app/thanosapi"
 	"github.com/zuoyangs/go-rcp/utils"
 )
 
 func main() {
+	envs := []string{"hwc-sh1-dev-cluster]", "hwc-sh1-test-cluster]", "hwc-sh1-pre-cluster]", "hwc-sh1-prod-cluster]"}
 
-	viper.SetConfigType("ini")
-	viper.SetConfigFile("etc/config/prometheus_server.ini")
+	for _, env := range envs {
+		labels, err := utils.GetSectionsAndLabels(env)
+		if err != nil {
+			fmt.Println("Error getting labels: ", err)
+			continue
+		}
 
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Printf("Error reading config file, %s", err)
+		avgCPUUsage, avgMemUsage, peakCPUUsage, peakMemUsage, err := thanosapi.GetClusterDetails(env, labels)
+
+		if err != nil {
+			fmt.Println("Error getting cluster details: ", err)
+			continue
+		}
+
+		if err = execl.WriteToExcel(avgCPUUsage, avgMemUsage, peakCPUUsage, peakMemUsage); err != nil {
+			fmt.Println("Error writing to excel: ", err)
+		}
 	}
-
-	for _, name := range viper.AllKeys() {
-		fmt.Println(name)
-	}
-
-	output.Exec_output()
-	thanosapi.GetClusterDetails("hwc-sh1-dev-cluster")
 }

@@ -1,2 +1,0 @@
-# go-rcp
-go-ResourceCapacityReport

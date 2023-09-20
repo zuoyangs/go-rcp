@@ -31,8 +31,8 @@ type Metric struct{}
 
 type Value json.Number
 
-func GetClusterDetails(ssection string) string {
-	cfg, err := ini.Load("etc/cluster_config.ini")
+func GetClusterDetails1(ssection string) string {
+	cfg, err := ini.Load("etc/config/prometheus_server.ini")
 	if err != nil {
 		fmt.Println("Error loading cluster_config.ini file:", err)
 		return ""
@@ -57,7 +57,7 @@ func GetClusterDetails(ssection string) string {
 
 func CPU_ConstructQuery(clusterCategory, clusterName, clusterJob, clusterMode, clusterId string) string {
 
-	cfg, err := ini.Load("etc/cluster_config.ini")
+	cfg, err := ini.Load("etc/config/thanos_server.ini")
 	if err != nil {
 		fmt.Println("Error loading cluster_config.ini file:", err)
 		return ""
@@ -79,8 +79,6 @@ func CPU_ConstructQuery(clusterCategory, clusterName, clusterJob, clusterMode, c
 			clusterId,
 		)
 
-	fmt.Println(query)
-
 	encodedQuery := url.QueryEscape(query)
 	url := fmt.Sprintf("%s/api/v1/query?query=%s", thanos_url, encodedQuery)
 
@@ -98,14 +96,12 @@ func CPU_ConstructQuery(clusterCategory, clusterName, clusterJob, clusterMode, c
 	}
 
 	var jsonResponse Response
-	err = json.Unmarshal(bodyByteSlice, &jsonResponse) // Use bodyByteSlice instead of jsonStr
+	err = json.Unmarshal(bodyByteSlice, &jsonResponse)
 	if err != nil {
 		fmt.Println("Error:", err)
-		return "" // Return an empty string if there's an error.
+		return ""
 	}
 
-	// Convert the second element of the "value" array to a string,
-	// then parse it as a float64 number.
 	valueString, ok := jsonResponse.Data.Result[0].Value[1].(string)
 	if !ok {
 		fmt.Println("Error: cannot convert value to string")
@@ -115,10 +111,9 @@ func CPU_ConstructQuery(clusterCategory, clusterName, clusterJob, clusterMode, c
 	valueFloat64, err := strconv.ParseFloat(valueString, 64)
 	if err != nil {
 		fmt.Println("Error:", err)
-		return "" // Return an empty string if there's an error.
+		return ""
 	}
 
-	// Convert it into percentage and keep two decimal places.
 	valueFloat64 = float64(int(valueFloat64*100)) / 100
 
 	fmt.Printf("%.2f%%\n", valueFloat64)
@@ -128,7 +123,7 @@ func CPU_ConstructQuery(clusterCategory, clusterName, clusterJob, clusterMode, c
 
 func MEM_ConstructQuery(clusterCategory, clusterName, clusterJob, clusterId string) string {
 
-	cfg, err := ini.Load("etc/cluster_config.ini")
+	cfg, err := ini.Load("etc/config/thanos_server.ini")
 	if err != nil {
 		fmt.Println("Error loading cluster_config.ini file:", err)
 		return ""
@@ -156,8 +151,6 @@ func MEM_ConstructQuery(clusterCategory, clusterName, clusterJob, clusterId stri
 			clusterId,
 		)
 
-	fmt.Println(query)
-
 	encodedQuery := url.QueryEscape(query)
 	url := fmt.Sprintf("%s/api/v1/query?query=%s", thanos_url, encodedQuery)
 
@@ -173,16 +166,14 @@ func MEM_ConstructQuery(clusterCategory, clusterName, clusterJob, clusterId stri
 		log.Fatalf("failed to read response body: %v", err)
 		return ""
 	}
-	fmt.Println(string(bodyByteSlice))
 
 	var jsonResponse Response
-	err = json.Unmarshal(bodyByteSlice, &jsonResponse) // Use bodyByteSlice instead of jsonStr
+	err = json.Unmarshal(bodyByteSlice, &jsonResponse)
 	if err != nil {
 		fmt.Println("Error:", err)
-		return "" // Return an empty string if there's an error.
+		return ""
 	}
-	// Convert the second element of the "value" array to a string,
-	// then parse it as a float64 number.
+
 	valueString, ok := jsonResponse.Data.Result[0].Value[1].(string)
 	if !ok {
 		fmt.Println("Error: cannot convert value to string")
@@ -192,13 +183,16 @@ func MEM_ConstructQuery(clusterCategory, clusterName, clusterJob, clusterId stri
 	valueFloat64, err := strconv.ParseFloat(valueString, 64)
 	if err != nil {
 		fmt.Println("Error:", err)
-		return "" // Return an empty string if there's an error.
+		return ""
 	}
 
-	// Convert it into percentage and keep two decimal places.
 	valueFloat64 = float64(int(valueFloat64*100)) / 100
 
 	fmt.Printf("%.2f%%", valueFloat64)
 
 	return fmt.Sprintf("%.2f", valueFloat64)
+}
+
+func GetClusterDetails(env string, labels map[string]string) (avgCPUUsage float64, avgMemUsage float64, peakCPUUsage float64, peakMemUsage float64, err error) {
+	return
 }
