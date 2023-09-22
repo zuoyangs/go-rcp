@@ -1,5 +1,4 @@
-package thanosapi
-
+package thanos
 import (
 	"encoding/json"
 	"fmt"

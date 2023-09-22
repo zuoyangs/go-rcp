@@ -31,11 +31,16 @@ func LoadConfigValues(loadFilePath, sectionName string, keyNames []string) (map[
 func GetSectionsAndLabels(env string) (map[string]string, error) {
 	v := viper.New()
 	v.SetConfigType("ini")
-	v.SetConfigName("prometheus_server")
-	v.AddConfigPath("/etc/config")
+	v.SetConfigName("config")
+	v.AddConfigPath("./etc")
 
+	// 读取配置
 	if err := v.ReadInConfig(); err != nil {
-		return nil, err
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			fmt.Println("file not found.")
+			return nil, err
+		}
+		panic(err)
 	}
 
 	labels := v.GetStringMapString(env)
