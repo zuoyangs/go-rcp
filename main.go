@@ -2,32 +2,26 @@ package main
 
 import (
 	"fmt"
+	"time"
 
-	execl "github.com/zuoyangs/go-rcp/app/excel"
-	"github.com/zuoyangs/go-rcp/app/thanos"
-	"github.com/zuoyangs/go-rcp/utils"
+	thanos "gitee.com/zuoyangs/go-rcp/apps/thanos"
+	"gitee.com/zuoyangs/go-rcp/utils"
 )
 
 func main() {
-	envs := []string{"hwc-sh1-dev-cluster", "hwc-sh1-test-cluster", "hwc-sh1-pre-cluster", "hwc-sh1-prod-cluster"}
+	dir := "./output"
 
-	for _, env := range envs {
-		labels, err := utils.GetSectionsAndLabels(env)
-		fmt.Println(env, labels)
-		if err != nil {
-			fmt.Println("Error getting labels: ", err)
-			continue
-		}
-
-		avgCPUUsage, avgMemUsage, peakCPUUsage, peakMemUsage, err := thanos.GetClusterDetails(env, labels)
-
-		if err != nil {
-			fmt.Println("Error getting cluster details: ", err)
-			continue
-		}
-
-		if err = execl.WriteToExcel(avgCPUUsage, avgMemUsage, peakCPUUsage, peakMemUsage); err != nil {
-			fmt.Println("Error writing to excel: ", err)
-		}
+	err := utils.DeleteFilesInDirectory(dir)
+	if err != nil {
+		fmt.Println("Error deleting files:", err)
+		return
 	}
+
+	dst := fmt.Sprintf("./output/cce容器集群信息_%s.xlsx", time.Now().Format("2006-01-02_15-04-05"))
+	err = utils.CopyFile("etc/cce容器集群信息.xlsx", dst)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	thanos.ThanosQuerier(dst)
 }
