@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	thanos "gitee.com/zuoyangs/go-rcp/apps/thanos"
@@ -10,6 +11,17 @@ import (
 
 func main() {
 	dir := "./output"
+
+	// 检查目录是否存在
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		// 目录不存在，创建目录
+		err := os.MkdirAll(dir, 0755)
+		if err != nil {
+			fmt.Println("创建目录失败:", err)
+			return
+		}
+		fmt.Println("目录创建成功:", dir)
+	}
 
 	err := utils.DeleteFilesInDirectory(dir)
 	if err != nil {

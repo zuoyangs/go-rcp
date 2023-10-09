@@ -9,7 +9,6 @@ import (
 
 	"gitee.com/zuoyangs/go-rcp/apps/thanos/impl"
 	"gitee.com/zuoyangs/go-rcp/config"
-	"gitee.com/zuoyangs/go-rcp/utils"
 	"gitee.com/zuoyangs/go-rcp/utils/excel"
 )
 
@@ -36,7 +35,7 @@ type ResourceQuerier interface {
 
 func ThanosQuerier(dst string) {
 	envs := []string{"hwc-sh1-prod-cluster", "hwc-sh1-pub-cluster", "hwc-sh1-pre-cluster", "hwc-sh1-test-cluster", "hwc-sh1-dev-cluster"}
-	//envs := []string{"hwc-sh1-prod-cluster"}
+	//envs := []string{"hwc-sh1-dev-cluster"}
 	config.Init()
 	excel.InsertCurrentTimeToExcel(dst, "集群信息")
 	for _, env := range envs {
@@ -74,8 +73,8 @@ func ThanosQuerier(dst string) {
 					body, err := io.ReadAll(respString.Body)
 					if err != nil {
 					}
-					utils.ParseClusterInformationData(dst, env, ns, key, body)
-					utils.ParseBusinessInformationData(dst, env, ns, key, body, &startrow)
+					impl.ParseClusterInfoData(dst, env, ns, key, body)
+					impl.ParseBusinessInfoData(dst, env, ns, key, body, &startrow)
 				}
 			}
 		}
